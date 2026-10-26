@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>추가 탐구 도서 선정 및 확정</title>
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --secondary-color: #64748b;
+      --secondary-hover: #475569;
+      --success-color: #10b981;
+      --success-hover: #059669;
+      --warning-color: #f59e0b;
+      --warning-hover: #d97706;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border: 1px solid var(--border-color);
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 460px;
+      position: relative;
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+
+    .header-subtitle {
+      font-size: 0.9rem;
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--primary-color);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    button {
+      flex: 1;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #ffffff;
+    }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+
+    .btn-secondary {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+    .btn-secondary:hover { background-color: #e2e8f0; }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: #ffffff;
+    }
+    .btn-success:hover { background-color: var(--success-hover); }
+
+    .btn-warning {
+      background-color: var(--warning-color);
+      color: #ffffff;
+    }
+    .btn-warning:hover { background-color: var(--warning-hover); }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .info-card {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      font-size: 0.92rem;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .info-value {
+      color: #1e293b;
+      margin-top: 2px;
+    }
+
+    .book-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #ffffff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-top: 4px;
+      border: 1px solid #dbeafe;
+      word-break: break-all;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+
+    .loader-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 4px solid #e2e8f0;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <!-- 로딩 오버레이 -->
+  <div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+    <div class="loader-text">처리 중입니다...</div>
+  </div>
+
+  <!-- Step 1: 최초 접속 질문 -->
+  <div id="step-1" class="step active">
+    <div class="header-title">추가 탐구 도서 신청 확인</div>
+    <div class="header-subtitle">탐구 발표자 신청을 완료하셨나요?</div>
+    <div class="btn-group">
+      <button class="btn-primary" onclick="goToStep('step-2-yes')">예 (기존 신청)</button>
+      <button class="btn-secondary" onclick="goToStep('step-2-no')">아니오</button>
+    </div>
+  </div>
+
+  <!-- Step 2-YES: 사전 신청자 정보 입력 -->
+  <div id="step-2-yes" class="step">
+    <div class="header-title">신청자 정보 조회</div>
+    <div class="header-subtitle">사전에 입력한 정보를 정확히 입력해 주세요.</div>
+    
+    <div class="input-group">
+      <label for="search-class">반 번호</label>
+      <input type="number" id="search-class" placeholder="예: 1">
+    </div>
+    <div class="input-group">
+      <label for="search-num">학생 번호</label>
+      <input type="number" id="search-num" placeholder="예: 7">
+    </div>
+    <div class="input-group">
+      <label for="search-name">이름</label>
+      <input type="text" id="search-name" placeholder="예: 김준호">
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-primary" onclick="searchStudent()">조회하기</button>
+      <button class="btn-secondary" onclick="goToStep('step-1')">이전</button>
+    </div>
+  </div>
+
+  <!-- Step 3-YES: 도서 확인 및 확정/변경 -->
+  <div id="step-3-yes" class="step">
+    <div class="header-title">도서 정보 확인</div>
+    <div class="header-subtitle">등록된 도서를 확인하고 확정 또는 변경해 주세요.</div>
+
+    <div class="info-card">
+      <div class="info-item">
+        <div class="info-label">학생 정보</div>
+        <div class="info-value" id="info-student"></div>
+      </div>
+      <div class="info-item" style="margin-top: 12px;">
+        <div class="info-label">신청 도서</div>
+        <div class="book-title" id="info-book"></div>
+      </div>
+      <div class="info-item" style="margin-top: 12px;">
+        <div class="info-label">처리 상태</div>
+        <div style="margin-top: 4px;">
+          <span class="status-badge" id="info-status"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 변경 입력 폼 (기본 숨김) -->
+    <div id="change-area" class="input-group" style="display:none;">
+      <label for="new-book">새로 변경할 책 제목</label>
+      <input type="text" id="new-book" placeholder="변경할 책 제목 입력">
+    </div>
+
+    <!-- 기본 버튼 그룹 -->
+    <div class="btn-group" id="action-btns">
+      <button class="btn-success" onclick="confirmBook()">확정하기</button>
+      <button class="btn-warning" onclick="showChangeInput()">변경하기</button>
+    </div>
+
+    <!-- 변경 제출 버튼 그룹 (기본 숨김) -->
+    <div class="btn-group" id="submit-change-btns" style="display:none;">
+      <button class="btn-primary" onclick="updateBook()">변경 저장</button>
+      <button class="btn-secondary" onclick="cancelChange()">취소</button>
+    </div>
+  </div>
+
+  <!-- Step 2-NO: 미신청자 선택 -->
+  <div id="step-2-no" class="step">
+    <div class="header-title">신규 발표 신청</div>
+    <div class="header-subtitle">탐구 발표를 새로 신청하시겠습니까?</div>
+    <div class="btn-group">
+      <button class="btn-primary" onclick="goToStep('step-3-register')">발표 신청하기</button>
+      <button class="btn-secondary" onclick="goToStep('step-exit')">나가기</button>
+    </div>
+  </div>
+
+  <!-- Step 3-REGISTER: 신규 신청 양식 -->
+  <div id="step-3-register" class="step">
+    <div class="header-title">신규 신청 작성</div>
+    <div class="header-subtitle">학번과 읽을 도서명을 입력해 주세요.</div>
+
+    <div class="input-group">
+      <label for="reg-class">반 번호</label>
+      <input type="number" id="reg-class" placeholder="예: 2">
+    </div>
+    <div class="input-group">
+      <label for="reg-num">학생 번호</label>
+      <input type="number" id="reg-num" placeholder="예: 15">
+    </div>
+    <div class="input-group">
+      <label for="reg-name">이름</label>
+      <input type="text" id="reg-name" placeholder="예: 이서준">
+    </div>
+    <div class="input-group">
+      <label for="reg-book">읽을 책 제목</label>
+      <input type="text" id="reg-book" placeholder="예: 아몬드 / 손원평">
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-success" onclick="registerStudent()">신청 완료</button>
+      <button class="btn-secondary" onclick="goToStep('step-2-no')">이전</button>
+    </div>
+  </div>
+
+  <!-- Step EXIT: 종료 화면 -->
+  <div id="step-exit" class="step">
+    <div class="header-title" style="margin-top: 10px;">감사합니다</div>
+    <div class="header-subtitle" style="margin-bottom: 24px;">신청 절차가 종료되었습니다.<br>이 창을 닫으셔도 됩니다.</div>
+    <div class="btn-group">
+      <button class="btn-secondary" onclick="goToStep('step-1')">처음으로 돌아가기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 사용자 제공 Google Apps Script 웹 앱 URL 적용 완료
+  const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgAX_SU10A3G8sf4GUnr9gojSI-FKn9GFy1PfFRvn_y9sCAHKKkVeHb_n702DcCaWL4A/exec";
+
+  let currentStudentData = null;
+
+  function goToStep(stepId) {
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    document.getElementById(stepId).classList.add('active');
+  }
+
+  function showLoader(show) {
+    const loader = document.getElementById('loader');
+    loader.style.display = show ? 'flex' : 'none';
+  }
+
+  // 1. 기존 신청자 검색
+  function searchStudent() {
+    const gradeClass = document.getElementById('search-class').value.trim();
+    const studentNum = document.getElementById('search-num').value.trim();
+    const name = document.getElementById('search-name').value.trim();
+
+    if (!gradeClass || !studentNum || !name) {
+      alert("반, 번호, 이름을 모두 입력해 주세요.");
+      return;
+    }
+
+    showLoader(true);
+    const url = `${GAS_WEB_APP_URL}?action=search&gradeClass=${encodeURIComponent(gradeClass)}&studentNum=${encodeURIComponent(studentNum)}&name=${encodeURIComponent(name)}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        showLoader(false);
+        if (data.success) {
+          currentStudentData = data;
+          document.getElementById('info-student').innerText = `${data.gradeClass}반 ${data.studentNum}번 ${data.name}`;
+          document.getElementById('info-book').innerText = data.book || "(선정된 책 없음)";
+          document.getElementById('info-status').innerText = data.status || "신청 완료";
+          
+          cancelChange();
+          goToStep('step-3-yes');
+        } else {
+          alert(data.message || "일치하는 정보를 찾을 수 없습니다.");
+        }
+      })
+      .catch(err => {
+        showLoader(false);
+        alert("데이터를 불러오는 중 오류가 발생했습니다. Apps Script 배포 상태를 확인해 주세요.");
+        console.error(err);
+      });
+  }
+
+  // 2. 신청 도서 확정
+  function confirmBook() {
+    if (!currentStudentData) return;
+
+    if (!confirm("현재 신청한 도서로 확정하시겠습니까?")) return;
+
+    showLoader(true);
+    const url = `${GAS_WEB_APP_URL}?action=confirm&rowIndex=${currentStudentData.rowIndex}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        showLoader(false);
+        alert(data.message);
+        if (data.success) {
+          goToStep('step-1');
+        }
+      })
+      .catch(err => {
+        showLoader(false);
+        alert("확정 처리 중 오류가 발생했습니다.");
+        console.error(err);
+      });
+  }
+
+  // 3-A. 변경 폼 열기/닫기
+  function showChangeInput() {
+    document.getElementById('change-area').style.display = 'block';
+    document.getElementById('action-btns').style.display = 'none';
+    document.getElementById('submit-change-btns').style.display = 'flex';
+    document.getElementById('new-book').value = currentStudentData.book || '';
+    document.getElementById('new-book').focus();
+  }
+
+  function cancelChange() {
+    document.getElementById('change-area').style.display = 'none';
+    document.getElementById('action-btns').style.display = 'flex';
+    document.getElementById('submit-change-btns').style.display = 'none';
+    document.getElementById('new-book').value = '';
+  }
+
+  // 3-B. 변경 저장 제출
+  function updateBook() {
+    const newBook = document.getElementById('new-book').value.trim();
+    if (!newBook) {
+      alert("변경할 도서명을 입력해 주세요.");
+      return;
+    }
+
+    if (!confirm(`'${newBook}'(으)로 도서를 변경하시겠습니까?`)) return;
+
+    showLoader(true);
+    const url = `${GAS_WEB_APP_URL}?action=update&rowIndex=${currentStudentData.rowIndex}&newBook=${encodeURIComponent(newBook)}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        showLoader(false);
+        alert(data.message);
+        if (data.success) {
+          goToStep('step-1');
+        }
+      })
+      .catch(err => {
+        showLoader(false);
+        alert("변경 처리 중 오류가 발생했습니다.");
+        console.error(err);
+      });
+  }
+
+  // 4. 신규 신청 등록
+  function registerStudent() {
+    const gradeClass = document.getElementById('reg-class').value.trim();
+    const studentNum = document.getElementById('reg-num').value.trim();
+    const name = document.getElementById('reg-name').value.trim();
+    const book = document.getElementById('reg-book').value.trim();
+
+    if (!gradeClass || !studentNum || !name || !book) {
+      alert("모든 항목을 입력해 주세요.");
+      return;
+    }
+
+    showLoader(true);
+    const url = `${GAS_WEB_APP_URL}?action=register&gradeClass=${encodeURIComponent(gradeClass)}&studentNum=${encodeURIComponent(studentNum)}&name=${encodeURIComponent(name)}&book=${encodeURIComponent(book)}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        showLoader(false);
+        alert(data.message);
+        if (data.success) {
+          // 입력 폼 비우기
+          document.getElementById('reg-class').value = '';
+          document.getElementById('reg-num').value = '';
+          document.getElementById('reg-name').value = '';
+          document.getElementById('reg-book').value = '';
+          goToStep('step-1');
+        }
+      })
+      .catch(err => {
+        showLoader(false);
+        alert("신청 등록 중 오류가 발생했습니다.");
+        console.error(err);
+      });
+  }
+</script>
+
+</body>
+</html>
